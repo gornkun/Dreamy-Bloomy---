@@ -1,0 +1,148 @@
+<!-- JavaScript ควบคุมการทำงานของระบบ -->
+    <script>
+        var currentRole = '';
+        var customerPoints = {};
+
+        function closeModal() {
+            document.getElementById('welcome-modal').style.display = 'none';
+            document.getElementById('login-modal').style.display = 'none';
+        }
+
+        function openForm(role) {
+            currentRole = role;
+            document.getElementById('welcome-modal').style.display = 'none';
+            document.getElementById('login-modal').style.display = 'flex';
+            
+            var title = document.getElementById('modal-title');
+            if(role === 'staff') {
+                title.innerText = '🪪 สำหรับพนักงาน (กรอกชื่อเพื่อเข้าสู่ระบบ)';
+            } else {
+                title.innerText = '🛍️ สำหรับลูกค้า (กรอกชื่อเพื่อไปหน้ารีวิว)';
+            }
+        }
+
+        function submitLogin() {
+            var name = document.getElementById('user-name-input').value.trim();
+            if (!name) {
+                alert('กรุณากรอกชื่อก่อนเข้าใช้งาน');
+                return;
+            }
+
+            closeModal();
+
+            if (currentRole === 'staff') {
+                document.body.classList.remove('customer-mode');
+                document.getElementById('emp-name').value = name;
+                switchTab('staff-tab', document.getElementById('btn-staff'));
+            } else if (currentRole === 'customer') {
+                document.body.classList.add('customer-mode');
+                document.getElementById('rev-name').value = name;
+                switchTab('review-tab', document.getElementById('btn-review'));
+            }
+        }
+
+        /* ฟังก์ชันสลับ Tab เมนู (ส่วนที่ขาดหายไป) */
+        function switchTab(tabId, btnElement) {
+            // 1. ซ่อนทุกหน้า
+            var sections = document.querySelectorAll('.page-section');
+            sections.forEach(function(sec) {
+                sec.classList.remove('active-page');
+            });
+
+            // 2. เอาสถานะ active ออกจากปุ่มเมนูทั้งหมด
+            var navBtns = document.querySelectorAll('.nav-btn');
+            navBtns.forEach(function(btn) {
+                btn.classList.remove('active');
+            });
+
+            // 3. แสดงเฉพาะหน้าที่เลือก
+            var targetSection = document.getElementById(tabId);
+            if (targetSection) {
+                targetSection.classList.add('active-page');
+            }
+
+            // 4. เปลี่ยนสีปุ่มที่กดให้เป็น active
+            if (btnElement) {
+                btnElement.classList.add('active');
+            }
+        }
+
+        /* ฟังก์ชันอัปโหลดรูปพนักงาน */
+        function previewEmpImage(event) {
+            var reader = new FileReader();
+            reader.onload = function() {
+                var output = document.getElementById('emp-preview-img');
+                output.src = reader.result;
+            }
+            if (event.target.files[0]) {
+                reader.readAsDataURL(event.target.files[0]);
+            }
+        }
+
+        /* ฟังก์ชันสร้างบัตรพนักงาน */
+        function generateEmpCard() {
+            var name = document.getElementById('emp-name').value.trim();
+            var pos = document.getElementById('emp-pos').value.trim();
+            var fb = document.getElementById('emp-fb').value.trim();
+
+            if (!name) {
+                alert('กรุณากรอกชื่อพนักงาน');
+                return;
+            }
+
+            document.getElementById('emp-card-name').innerText = name;
+            document.getElementById('emp-card-pos').innerText = pos || 'พนักงาน';
+            document.getElementById('emp-card-fb').href = fb || '#';
+            document.getElementById('emp-card-display').style.display = 'flex';
+        }
+
+        /* ฟังก์ชันสะสมแต้ม */
+        function addPoint() {
+            var name = document.getElementById('point-name').value.trim();
+            if (!name) {
+                alert('กรุณาระบุชื่อลูกค้า');
+                return;
+            }
+
+            if (!customerPoints[name]) {
+                customerPoints[name] = 0;
+            }
+            customerPoints[name] += 1;
+
+            var points = customerPoints[name];
+            document.getElementById('display-customer-name').innerText = 'ชื่อลูกค้า: ' + name;
+            document.getElementById('current-point-count').innerText = points;
+            document.getElementById('point-result').style.display = 'block';
+
+            document.getElementById('stamp-3').classList.toggle('active', points >= 3);
+            document.getElementById('stamp-5').classList.toggle('active', points >= 5);
+            document.getElementById('stamp-10').classList.toggle('active', points >= 10);
+
+            if (points >= 10) {
+                document.getElementById('vip-card-name-display').innerText = name;
+                document.getElementById('vip-section').style.display = 'block';
+            }
+        }
+
+        /* ฟังก์ชันเพิ่มรีวิว */
+        function addReview() {
+            var name = document.getElementById('rev-name').value.trim();
+            var text = document.getElementById('rev-text').value.trim();
+
+            if (!name || !text) {
+                alert('กรุณากรอกชื่อและข้อความรีวิว');
+                return;
+            }
+
+            var list = document.getElementById('reviews-list');
+            var newItem = document.createElement('div');
+            newItem.className = 'review-item';
+            newItem.innerHTML = '<strong>คุณ ' + name + '</strong><p>' + text + '</p>';
+            
+            list.insertBefore(newItem, list.firstChild);
+            document.getElementById('rev-text').value = '';
+            alert('ส่งรีวิวเรียบร้อยแล้ว ขอบคุณครับ!');
+        }
+    </script>
+</body>
+</html>
