@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dreamy Bloomy - ร้านดอกไม้บายฝัน</title>
+    <link href="https://fonts.googleapis.com/css2?family=Mitr:wght@300;400;500;600&family=Sarabun:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-pink: #ff85a1;
+            --secondary-pink: #fbb1bd;
+            --accent-purple: #c77dff;
+            --bg-pastel: #fff0f5;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --dark-text: #5c3d46;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Mitr', 'Sarabun', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #ffe6eb 0%, #e8dff5 100%);
+            color: var(--dark-text);
+            min-height: 100vh;
+        }
+
+        /* Modal หน้าปก & ป๊อปอัพเลือกระบบ */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+        }
+
+        .modal-card {
+            background: #ffffff;
+            border-radius: 24px;
+            padding: 30px;
+            width: 90%;
+            max-width: 420px;
+            text-align: center;
+            position: relative;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+            border: 3px solid #ffb3c1;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: #ffe6eb;
+            color: #d80056;
+            border: none;
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: 0.2s;
+        }
+
+        .close-btn:hover {
+            background: #ff4e6a;
+            color: white;
+        }
+
+        .role-btn-group {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .role-btn {
+            flex: 1;
+            padding: 14px;
+            border-radius: 15px;
+            border: 2px solid #ff85a1;
+            background: white;
+            color: #d80056;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .role-btn:hover {
+            background: #ff85a1;
+            color: white;
+            box-shadow: 0 5px 15px rgba(255, 133, 161, 0.4);
+        }
+
+        /* เมนูด้านบน (Navigation Bar) */
+        nav {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            border-bottom: 2px solid #ffb3c1;
+        }
+
+        .nav-container {
+            max-width: 1100px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+        }
+
+        .brand-logo {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #d80056;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 8px;
+            list-style: none;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: 2px solid transparent;
+            padding: 8px 16px;
+            border-radius: 20px;
+            color: var(--dark-text);
+            font-weight: 500;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .nav-btn:hover, .nav-btn.active {
+            background: #ff85a1;
+            color: white;
+            box-shadow: 0 4px 10px rgba(255, 133, 161, 0.3);
+        }
+
+        /* ซ่อนเมนูพนักงานเมื่อเข้าโหมดลูกค้า */
+        body.customer-mode .staff-only {
+            display: none !important;
+        }
+
+        /* คอนเทนต์แต่ละหน้า */
+        .container {
+            max-width: 1000px;
+            margin: 25px auto;
+            padding: 0 20px;
+        }
+
+        .page-section {
+            display: none;
+        }
+
+        .page-section.active-page {
+            display: block;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+            border: 2px solid #ffffff;
+            margin-bottom: 25px;
+        }
+
+        .card h2 {
+            color: #b5179e;
+            margin-bottom: 15px;
+            font-size: 1.4rem;
+            border-bottom: 2px dashed #fbb1bd;
+            padding-bottom: 8px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+        }
+
+        input[type="text"], input[type="url"], textarea, input[type="file"] {
+            width: 100%;
+            padding: 10px 15px;
+            border: 2px solid #f0c3d4;
+            border-radius: 12px;
+            outline: none;
+            font-size: 0.95rem;
+            background: #fff;
+        }
+
+        input[type="text"]:focus, input[type="url"]:focus, textarea:focus {
+            border-color: var(--primary-pink);
+            box-shadow: 0 0 8px rgba(255, 133, 161, 0.3);
+        }
+
+        .action-btn {
+            background: linear-gradient(45deg, #ff758c, #ff7eb3);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 500;
+            font-size: 1rem;
+            box-shadow: 0 4px 12px rgba(255, 117, 140, 0.4);
+            width: 100%;
+        }
+
+        .header-banner {
+            width: 100%;
+            border-radius: 20px;
+        }
+
+        /* บัตรสะสมแต้ม */
+        .stamp-card-container {
+            background: #ffe6eb;
+            border-radius: 15px;
+            padding: 30px 20px;
+            color: #d80056;
+            text-align: center;
+        }
+
+        .stamp-card-name {
+            font-size: 1.3rem;
+            font-weight: bold;
+            background: rgba(255,255,255,0.85);
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            margin-bottom: 10px;
+        }
+
+        .stamp-box {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 10px 0;
+        }
+
+        .stamp-circle {
+            width: 55px;
+            height: 55px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            border: 2px dashed #ff758c;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #d80056;
+            font-size: 0.95rem;
+        }
+
+        .stamp-circle.active {
+            background: #ff4e6a;
+            color: white;
+            border-style: solid;
+        }
+
+        /* บัตร VIP */
+        .vip-card-template {
+            background: linear-gradient(135deg, #fff0f5 0%, #ffd6e0 100%);
+            border: 3px solid #f7aef8;
+            border-radius: 20px;
+            padding: 20px;
+            margin-top: 15px;
+        }
+
+        .vip-header {
+            text-align: center;
+            color: #b5179e;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-bottom: 15px;
+        }
+
+        .vip-body {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .vip-badge {
+            display: inline-block;
+            background: linear-gradient(45deg, #d80056, #b5179e);
+            color: white;
+            padding: 4px 15px;
+            border-radius: 15px;
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        /* รีวิว */
+        .review-banner {
+            width: 100%;
+            border-radius: 15px;
+            margin-bottom: 15px;
+        }
+
+        .review-item {
+            background: #fff;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            border-left: 5px solid var(--primary-pink);
+        }
+
+        .badge-card {
+            background: #fff;
+            border-radius: 15px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .badge-avatar {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .fb-btn {
+            display: inline-block;
+            margin-top: 5px;
+            padding: 4px 10px;
+            background: #1877f2;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-size: 0.8rem;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 1. POPUP หน้าแรก (เลือก พนักงาน / ลูกค้า) -->
+    <div id="welcome-modal" class="modal-overlay">
+        <div class="modal-card">
+            <button type="button" class="close-btn" onclick="closeModal()">✕</button>
+            <h2 style="color: #d80056; margin-bottom: 10px;">🌸 Dreamy Bloomy 🌸</h2>
+            <p style="color: #666; font-size: 0.95rem; margin-bottom: 15px;">ยินดีต้อนรับสู่ร้านดอกไม้บายฝัน กรุณาเลือกสถานะของคุณเพื่อเข้าสู่ระบบ</p>
+            <div class="role-btn-group">
+                <button type="button" class="role-btn" onclick="openForm('staff')">🪪 พนักงาน</button>
+                <button type="button" class="role-btn" onclick="openForm('customer')">🛍️ ลูกค้า</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. POPUP กรอกชื่อ -->
+    <div id="login-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-card">
+            <button type="button" class="close-btn" onclick="closeModal()">✕</button>
+            <h3 id="modal-title" style="color: #b5179e; margin-bottom: 15px;">กรอกชื่อเข้าใช้งาน</h3>
+            <div class="form-group">
+                <input type="text" id="user-name-input" placeholder="กรอกชื่อของคุณที่นี่...">
+            </div>
+            <button type="button" class="action-btn" onclick="submitLogin()">ตกลง / เข้าใช้งาน</button>
+        </div>
+    </div>
+
+    <!-- เมนูด้านบน -->
+    <nav>
+        <div class="nav-container">
+            <div class="brand-logo">🌸 Dreamy Bloomy</div>
+            <ul class="nav-menu">
+                <li class="staff-only"><button id="btn-home" type="button" class="nav-btn active" onclick="switchTab('home-tab', this)">🏠 หน้าแรก</button></li>
+                <li class="staff-only"><button id="btn-staff" type="button" class="nav-btn" onclick="switchTab('staff-tab', this)">🪪 สำหรับพนักงาน</button></li>
+                <li class="staff-only"><button id="btn-customer" type="button" class="nav-btn" onclick="switchTab('customer-tab', this)">🎟️ สะสมแต้ม</button></li>
+                <li><button id="btn-review" type="button" class="nav-btn" onclick="switchTab('review-tab', this)">📝 รีวิวร้านค้า</button></li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container">
+
+        <!-- TAB 1: หน้าแรก -->
+        <div id="home-tab" class="page-section active-page">
+            <div class="card" style="text-align: center;">
+                <h2 style="margin-top: 20px; border:none;">ยินดีต้อนรับสู่ Dreamy Bloomy 🌸</h2>
+                <p>ส่งต่อความรู้สึกดีๆ ผ่านดอกไม้และการ์ดแสนพิเศษ เพราะทุกความรู้สึก... เราอยากให้ถึงมือคนที่คุณรัก</p>
+            </div>
+        </div>
+
+        <!-- TAB 2: พนักงาน -->
+        <div id="staff-tab" class="page-section">
+            <div class="card">
+                <h2>🪪 กรอกข้อมูลพนักงาน</h2>
+                <div class="form-group">
+                    <label for="emp-name">ชื่อ-นามสกุล พนักงาน:</label>
+                    <input type="text" id="emp-name" placeholder="กรอกชื่อพนักงาน">
+                </div>
+                <div class="form-group">
+                    <label for="emp-pos">ตำแหน่งงาน:</label>
+                    <input type="text" id="emp-pos" placeholder="เช่น ช่างจัดดอกไม้, พนักงานหน้าร้าน">
+                </div>
+                <div class="form-group">
+                    <label for="emp-fb">ลิงก์ Facebook ติดต่อ:</label>
+                    <input type="url" id="emp-fb" placeholder="https://facebook.com/yourprofile">
+                </div>
+                <div class="form-group">
+                    <label for="emp-img-input">อัปโหลดรูปพนักงาน:</label>
+                    <input type="file" id="emp-img-input" accept="image/*" onchange="previewEmpImage(event)">
+                </div>
+                <button type="button" class="action-btn" onclick="generateEmpCard()">บันทึกข้อมูล / สร้างบัตรพนักงาน</button>
+
+                <div id="emp-card-display" class="badge-card" style="display: none;">
+                    <img id="emp-preview-img" class="badge-avatar" src="https://via.placeholder.com/70" alt="Staff">
+                    <div>
+                        <h3 id="emp-card-name">ชื่อ พนักงาน</h3>
+                        <p id="emp-card-pos" style="font-size: 0.85rem; color: #666;">ตำแหน่ง</p>
+                        <a id="emp-card-fb" class="fb-btn" href="#" target="_blank">Facebook</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 3: ลูกค้า/สะสมแต้ม -->
+        <div id="customer-tab" class="page-section">
+            <div class="card">
+                <h2>💖 กรอกชื่อลูกค้า (ระบบสะสมแต้ม)</h2>
+                <div class="form-group" style="max-width: 500px;">
+                    <label for="point-name">ระบุชื่อลูกค้าเพื่อบันทึกแต้ม:</label>
+                    <input type="text" id="point-name" placeholder="กรอกชื่อลูกค้า...">
+                    <button type="button" class="action-btn" onclick="addPoint()" style="margin-top: 10px;">+ บันทึกเพิ่มแต้มสะสม (+1 แต้ม)</button>
+                </div>
+
+                <div id="point-result" style="display:none; max-width: 650px; margin-top: 20px;">
+                    <div class="stamp-card-container">
+                        <div class="stamp-card-name" id="display-customer-name">ชื่อลูกค้า: -</div>
+                        <div class="stamp-box">
+                            <div class="stamp-circle" id="stamp-3">3 ครั้ง</div>
+                            <div class="stamp-circle" id="stamp-5">5 ครั้ง</div>
+                            <div class="stamp-circle" id="stamp-10">10 ครั้ง</div>
+                        </div>
+                        <p style="margin-top: 10px; font-weight: bold; background: rgba(255,255,255,0.9); padding: 5px; border-radius: 10px;">
+                            จำนวนครั้งที่สะสมได้: <span id="current-point-count" style="color: #ff4e6a; font-size: 1.2rem;">0</span> ครั้ง
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card" id="vip-section" style="display: none;">
+                <h2>👑 บัตรสมาชิก VIP (สร้างให้อัตโนมัติ)</h2>
+                <div class="vip-card-template">
+                    <div class="vip-header">🌸 Dreamy Bloomy VIP 🌸</div>
+                    <div class="vip-body">
+                        <div class="vip-info">
+                            <p><strong>ลูกค้าระดับ VIP</strong></p>
+                            <p>ชื่อ: <span id="vip-card-name-display" style="color: #d80056; font-weight: bold;">-</span></p>
+                            <p>สถานะ: <span class="vip-badge">VIP Member</span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 4: รีวิว -->
+        <div id="review-tab" class="page-section">
+            <div class="card">
+                <h2>📝 รีวิวและข้อเสนอแนะ</h2>
+                <div class="form-group">
+                    <label for="rev-name">ชื่อผู้รีวิว:</label>
+                    <input type="text" id="rev-name" placeholder="ใส่ชื่อของคุณ">
+                </div>
+                <div class="form-group">
+                    <label for="rev-text">ความคิดเห็น:</label>
+                    <textarea id="rev-text" rows="3" placeholder="ความประทับใจของคุณ..."></textarea>
+                </div>
+                <button type="button" class="action-btn" onclick="addReview()">ส่งรีวิว</button>
+            </div>
+
+            <div class="card">
+                <h2>💬 รีวิวจากลูกค้า</h2>
+                <div id="reviews-list">
+                    <div class="review-item">
+                        <strong>คุณสิบทิศ (ลูกค้า VIP)</strong>
+                        <p>ดอกไม้สด สวยงามมาก จัดช่อหรูหราตรงปกมากๆ ครับ ประทับใจมาก!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- JavaScript ควบคุมหน้าต่างป๊อปอัพและการทำงานของระบบ -->
+    <script>
+        var currentRole = '';
+        var customerPoints = {};
+
+        function closeModal() {
+            document.getElementById('welcome-modal').style.display = 'none';
+            document.getElementById('login-modal').style.display = 'none';
+        }
+
+        function openForm(role) {
+            currentRole = role;
+            document.getElementById('welcome-modal').style.display = 'none';
+            document.getElementById('login-modal').style.display = 'flex';
+            
+            var title = document.getElementById('modal-title');
+            if(role === 'staff') {
+                title.innerText = '🪪 สำหรับพนักงาน (กรอกชื่อเพื่อเข้าสู่ระบบ)';
+            } else {
+                title.innerText = '🛍️ สำหรับลูกค้า (กรอกชื่อเพื่อไปหน้ารีวิว)';
+            }
+        }
+
+        function submitLogin() {
+            var name = document.getElementById('user-name-input').value.trim();
+            if (!name) {
+                alert('กรุณากรอกชื่อก่อนเข้าใช้งาน');
+                return;
+            }
+
+            closeModal();
+
+            if (currentRole === 'staff') {
+                document.body.classList.remove('customer-mode');
+                document.getElementById('emp-name').value = name;
+                switchTab('staff-tab', document.getElementById('btn-staff'));
+            } else if (currentRole === 'customer') {
+                document.body.classList.add('customer-mode');
+                document.getElementById('rev-name').value = name;
+                switchTab('review-tab', document.getElementById('btn-review'));
+            }
+        }
+
+        /* ฟังก์ชันสลับ Tab เมนู (แก้ไขแล้ว) */
+        function switchTab(tabId, btnElement) {
+            // ซ่อนทุกหน้า
+            var sections = document.querySelectorAll('.page-section');
+            sections.forEach(function(sec) {
+                sec.classList.remove('active-page');
+            });
+
+            // เอาสถานะ active ออกจากปุ่มทั้งหมด
+            var navBtns = document.querySelectorAll('.nav-btn');
+            navBtns.forEach(function(btn) {
+                btn.classList.remove('active');
+            });
+
+            // แสดงหน้าที่เลือกและไฮไลต์ปุ่ม
+            var targetSection = document.getElementById(tabId);
+            if (targetSection) {
+                targetSection.classList.add('active-page');
+            }
+
+            if (btnElement) {
+                btnElement.classList.add('active');
+            }
+        }
+
+        /* ระบบสร้างบัตรพนักงาน */
+        function previewEmpImage(event) {
+            var reader = new FileReader();
+            r
