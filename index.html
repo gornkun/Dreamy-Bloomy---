@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bloom & Blossom - ระบบจัดการร้านดอกไม้</title>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #e88a99;
+            --primary-hover: #d37382;
+            --secondary: #6b8e72;
+            --bg-color: #fdf8f5;
+            --card-bg: #ffffff;
+            --text-main: #4a4a4a;
+            --shadow: 0 8px 20px rgba(0,0,0,0.05);
+        }
+
+        * { box-sizing: border-box; font-family: 'Prompt', sans-serif; }
+        body { margin: 0; padding: 20px; background-color: var(--bg-color); color: var(--text-main); }
+
+        .container { max-width: 1050px; margin: 0 auto; }
+
+        header { text-align: center; margin-bottom: 20px; }
+        header h1 { color: var(--primary); margin: 0; font-size: 2.2rem; }
+
+        nav { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 25px; }
+        .nav-btn {
+            padding: 10px 20px; border: none; background: #fff; color: var(--text-main);
+            border-radius: 25px; cursor: pointer; font-weight: 500; box-shadow: var(--shadow); transition: all 0.3s;
+        }
+        .nav-btn.active { background: var(--primary); color: white; }
+
+        .page-section { display: none; background: var(--card-bg); padding: 25px; border-radius: 16px; box-shadow: var(--shadow); }
+        .page-section.active-page { display: block; }
+
+        .form-group { margin-bottom: 15px; }
+        .form-group label { display: block; margin-bottom: 5px; font-weight: 500; }
+        .form-group input, .form-group select, .form-group textarea {
+            width: 100%; padding: 10px 15px; border: 1px solid #eee; border-radius: 8px; background: #fafafa;
+        }
+
+        button.btn-submit {
+            background: var(--primary); color: white; border: none; padding: 10px 20px;
+            border-radius: 8px; cursor: pointer; width: 100%; font-size: 1rem; font-weight: 500;
+        }
+        button.btn-submit:hover { background: var(--primary-hover); }
+
+        .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+        .album-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; margin-top: 20px; }
+
+        .album-card { border-radius: 12px; overflow: hidden; border: 1px solid #eee; background: #fff; }
+        .album-card img { width: 100%; height: 160px; object-fit: cover; }
+        .album-card .info { padding: 12px; }
+
+        /* บัตรพนักงาน */
+        .staff-card {
+            border: 2px solid var(--primary); border-radius: 16px; padding: 20px;
+            background: #fff5f6; text-align: center; max-width: 320px; margin: 0 auto; box-shadow: var(--shadow);
+        }
+        .staff-card img {
+            width: 120px; height: 120px; border-radius: 50%; object-fit: cover;
+            border: 3px solid var(--primary); background: #eee; margin-bottom: 10px;
+        }
+        .staff-card .role-badge {
+            display: inline-block; padding: 4px 12px; border-radius: 12px;
+            background: var(--primary); color: white; font-size: 0.85rem; font-weight: 500; margin-bottom: 10px;
+        }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th, td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; }
+        th { background: #fafafa; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>🌸 Bloom & Blossom</h1>
+        <p>ระบบจัดการร้านดอกไม้ และแสดงข้อมูลบุคลากร</p>
+    </header>
+
+    <nav>
+        <button class="nav-btn active" onclick="switchTab('staff-tab', this)">🪪 บัตรพนักงาน (13 คน)</button>
+        <button class="nav-btn" onclick="switchTab('album-tab', this)">📸 เพิ่มผลงาน & ออเดอร์</button>
+        <button class="nav-btn" onclick="switchTab('orders-tab', this)">🧾 รายการออเดอร์</button>
+        <button class="nav-btn" onclick="switchTab('leave-tab', this)">📝 ยื่นใบลาพนักงาน</button>
+    </nav>
+
+    <!-- 1. บัตรพนักงาน 13 คน -->
+    <section id="staff-tab" class="page-section active-page">
+        <h3>🪪 ระบบจัดการและแสดงบัตรพนักงาน</h3>
+        <div class="grid-2">
+            <div>
+                <div class="form-group">
+                    <label>เลือกบุคลากร (13 คน):</label>
+                    <select id="select-staff" onchange="renderStaffCard()">
+                        <!-- รายชื่อถูกเจนจาก JS -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>แก้ไขชื่อ-นามสกุล:</label>
+                    <input type="text" id="edit-emp-name">
+                </div>
+                <div class="form-group">
+                    <label>แก้ไขที่อยู่รูปภาพ (เช่น photo1.jpg):</label>
+                    <input type="text" id="edit-emp-photo" placeholder="photo1.jpg">
+                </div>
+                <button class="btn-submit" onclick="saveStaffData()">อัปเดตข้อมูลพนักงานคนนี้</button>
+            </div>
+
+            <!-- แสดงบัตรพนักงาน -->
+            <div>
+                <div class="staff-card" id="staff-card-display">
+                    <img id="card-img" src="" alt="รูปพนักงาน">
+                    <div><span class="role-badge" id="card-role">เจ้าของร้าน</span></div>
+                    <h3 style="margin: 5px 0;" id="card-name">ชื่อ-นามสกุล</h3>
+                    <p style="margin: 0; color: #777;" id="card-id">รหัส: EMP-00</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. หน้าเพิ่มผลงานสู่อัลบั้ม (สร้างออเดอร์อัตโนมัติ) -->
+    <section id="album-tab" class="page-section">
+        <h3>🌸 เพิ่มผลงานในอัลบั้ม (ระบบสร้างออเดอร์ให้อัตโนมัติ)</h3>
+        <div class="grid-2">
+            <div>
+                <div class="form-group">
+                    <label>พนักงานผู้จัดทำ:</label>
+                    <select id="alb-staff-select">
+                        <!-- รายชื่อจะตรงกับพนักงานทั้ง 13 คน -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>ชื่อลูกค้า:</label>
+                    <input type="text" id="alb-cust-name" placeholder="ชื่อลูกค้า">
+                </div>
+                <div class="form-group">
+                    <label>รายละเอียด / ชื่อช่อดอกไม้:</label>
+                    <input type="text" id="alb-detail" placeholder="เช่น ช่อกุหลาบสีชมพู 99 ดอก">
+                </div>
+                <div class="form-group">
+                    <label>ราคาสินค้า (บาท):</label>
+                    <input type="number" id="alb-price" placeholder="0.00">
+                </div>
+                <div class="form-group">
+                    <label>รูปภาพผลงานจัดดอกไม้:</label>
+                    <input type="file" id="alb-img-input" accept="image/*">
+                </div>
+                <button class="btn-submit" onclick="addAlbumAndOrder()">บันทึกผลงาน & สร้างออเดอร์</button>
+            </div>
+            <div>
+                <h4>🖼️ อัลบั้มผลงานล่าสุด</h4>
+                <div class="album-grid" id="album-display"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. หน้ารายงานออเดอร์ -->
+    <section id="orders-tab" class="page-section">
+        <h3>📊 สรุปยอดขายและจำนวนออเดอร์</h3>
+        <div class="grid-2" style="margin-bottom: 20px;">
+            <div style="background: #fdf2f4; padding: 15px; border-radius: 12px; text-align: center;">
+                <h4 style="margin: 0; color: var(--primary);">ยอดขายรวมทั้งหมด</h4>
+                <h2 style="margin: 5px 0 0 0;" id="total-sales">0 บาท</h2>
+            </div>
+            <div style="background: #eef5f0; padding: 15px; border-radius: 12px; text-align: center;">
+                <h4 style="margin: 0; color: var(--secondary);">จำนวนออเดอร์ทั้งหมด</h4>
+                <h2 style="margin: 5px 0 0 0;" id="total-orders">0 ออเดอร์</h2>
+            </div>
+        </div>
+
+        <h4>สรุปการทำรายการแยกตามพนักงาน</h4>
+        <ul id="staff-performance" style="padding-left: 20px; line-height: 1.8;"></ul>
+
+        <h4>ตารางออเดอร์ทั้งหมด</h4>
+        <table>
+            <thead>
+                <tr>
+                    <th>ผู้จัด (รหัส/ชื่อ)</th>
+                    <th>ชื่อลูกค้า</th>
+                    <th>รายการ</th>
+                    <th>ราคา</th>
+                </tr>
+            </thead>
+            <tbody id="orders-table-body"></tbody>
+        </table>
+    </section>
+
+    <!-- 4. หน้าใบลายื่นพนักงาน -->
+    <section id="leave-tab" class="page-section">
+        <h3>📝 แบบฟอร์มยื่นใบลาพนักงาน</h3>
+        <div class="grid-2">
+            <div>
+                <div class="form-group">
+                    <label>เลือกพนักงาน:</label>
+                    <select id="leave-staff-select"></select>
+                </div>
+                <div class="form-group">
+                    <label>ประเภทการลา:</label>
+                    <select id="leave-type">
+                        <option value="ลากิจ">ลากิจ</option>
+                        <option value="ลาป่วย">ลาป่วย</option>
+                        <option value="พักร้อน">พักร้อน</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>วันที่ต้องการลา:</label>
+                    <input type="date" id="leave-date">
+                </div>
+                <div class="form-group">
+                    <label>เหตุผลการลา:</label>
+                    <textarea id="leave-reason" rows="3" placeholder="ระบุเหตุผล..."></textarea>
+                </div>
+                <button class="btn-submit" style="background: var(--secondary);" onclick="submitLeave()">ส่งใบลา</button>
+            </div>
+            <div>
+                <h4>📋 ประวัติการยื่นใบลาล่าสุด</h4>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>พนักงาน</th>
+                            <th>ประเภท</th>
+                            <th>วันที่</th>
+                            <th>เหตุผล</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leave-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+</div>
+
+<script>
+    // ฐานข้อมูลพนักงานทั้ง 13 คน (สามารถเปลี่ยนไฟล์รูป photo1.jpg ในนี้ได้ทันที)
+    var staffMembers = [
+        { id: "EMP-01", name: "คุณอนันต์ (เจ้าของร้าน)", role: "เจ้าของร้าน", photo: "photo1.jpg" },
+        { id: "EMP-02", name: "คุณเกศรินทร์ (ผู้จัดการ)", role: "ผู้จัดการร้าน", photo: "photo2.jpg" },
+        { id: "EMP-03", name: "ช่างจัดดอกไม้ A", role: "นักจัดดอกไม้หลัก", photo: "photo3.jpg" },
+        { id: "EMP-04", name: "ช่างจัดดอกไม้ B", role: "นักจัดดอกไม้หลัก", photo: "photo4.jpg" },
+        { id: "EMP-05", name: "ช่างจัดดอกไม้ C", role: "นักจัดดอกไม้", photo: "photo5.jpg" },
+        { id: "EMP-06", name: "ช่างจัดดอกไม้ D", role: "นักจัดดอกไม้", photo: "photo6.jpg" },
+        { id: "EMP-07", name: "ช่างจัดดอกไม้ E", role: "นักจัดดอกไม้", photo: "photo7.jpg" },
+        { id: "EMP-08", name: "พนักงานแคชเชียร์ 1", role: "แคชเชียร์", photo: "photo8.jpg" },
+        { id: "EMP-09", name: "พนักงานแคชเชียร์ 2", role: "แคชเชียร์", photo: "photo9.jpg" },
+        { id: "EMP-10", name: "พนักงานจัดส่ง 1", role: "พนักงานจัดส่ง", photo: "photo10.jpg" },
+        { id: "EMP-11", name: "พนักงานจัดส่ง 2", role: "พนักงานจัดส่ง", photo: "photo11.jpg" },
+        { id: "EMP-12", name: "พนักงานหน้าร้าน", role: "บริการลูกค้า", photo: "photo12.jpg" },
+        { id: "EMP-13", name: "ผู้ช่วยทั่วไป", role: "ผู้ช่วยทั่วไป", photo: "photo13.jpg" }
+    ];
+
+    var ordersList = [];
+
+    // เริ่มต้นโหลดข้อมูล
+    document.addEventListener("DOMContentLoaded", function() {
+        populateStaffDropdowns();
+        renderStaffCard();
+    });
+
+    function switchTab(tabId, btnElement) {
+        document.querySelectorAll('.page-section').forEach(sec => sec.classList.remove('active-page'));
+        document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
+        document.getElementById(tabId).classList.add('active-page');
+        btnElement.classList.add('active');
+    }
+
+    /* ใส่ข้อมูลรายชื่อลงตัวเลือก Select */
+    function populateStaffDropdowns() {
+        var selectCard = document.getElementById('select-staff');
+        var selectAlb = document.getElementById('alb-staff-select');
+        var selectLeave = document.getElementById('leave-staff-select');
+
+        selectCard.innerHTML = '';
+        selectAlb.innerHTML = '';
+        selectLeave.innerHTML = '';
+
+        staffMembers.forEach((emp, index) => {
+            var opt = `<option value="${index}">[${emp.id}] ${emp.name} (${emp.role})</option>`;
+            selectCard.innerHTML += opt;
+            selectAlb.innerHTML += opt;
+            selectLeave.innerHTML += opt;
+        });
+    }
+
+    /* แสดงข้อมูลบนบัตรพนักงาน */
+    function renderStaffCard() {
+        var idx = document.getElementById('select-staff').value;
+        var emp = staffMembers[idx];
+
+        document.getElementById('card-id').innerText = "รหัส: " + emp.id;
+        document.getElementById('card-name').innerText = emp.name;
+        document.getElementById('card-role').innerText = emp.role;
+        document.getElementById('card-img').src = emp.photo || 'https://via.placeholder.com/120?text=No+Photo';
+
+        // เติมข้อมูลลงช่องแก้ไข
+        document.getElementById('edit-emp-name').value = emp.name;
+        document.getElementById('edit-emp-photo').value = emp.photo;
+    }
+
+    /* บันทึกการแก้ไขข้อมูลพนักงาน */
+    function saveStaffData() {
+        var idx = document.getElementById('select-staff').value;
+        staffMembers[idx].name = document.getElementById('edit-emp-name').value;
+        staffMembers[idx].photo = document.getElementById('edit-emp-photo').value;
+
+        populateStaffDropdowns();
+        document.getElementById('select-staff').value = idx;
+        renderStaffCard();
+        alert('อัปเดตข้อมูลพนักงานเรียบร้อยแล้ว!');
+    }
+
+    /* บันทึกรูปเข้าอัลบั้ม + เชื่อมเป็นออเดอร์ */
+    function addAlbumAndOrder() {
+        var idx = document.getElementById('alb-staff-select').value;
+        var emp = staffMembers[idx];
+        var custName = document.getElementById('alb-cust-name').value.trim();
+        var detail = document.getElementById('alb-detail').value.trim();
+        var price = parseFloat(document.getElementById('alb-price').value);
+        var fileInput = document.getElementById('alb-img-input');
+
+        if (!custName || isNaN(price) || price <= 0) {
+            alert('กรุณากรอกชื่อลูกค้า และราคาสินค้าให้ถูกต้อง');
+            return;
+        }
+
+        var imgSrc = 'https://via.placeholder.com/200?text=Flower';
+        if (fileInput.files && fileInput.files[0]) {
+            imgSrc = URL.createObjectURL(fileInput.files[0]);
+        }
+
+        // 1. บันทึกเข้าออเดอร์
+        ordersList.push({ empId: emp.id, empName: emp.name, customer: custName, detail: detail, price: price });
+
+        // 2. แสดงรูปภาพลงอัลบั้ม
+        var albumBox = document.getElementById('album-display');
+        var card = document.createElement('div');
+        card.className = 'album-card';
+        card.innerHTML = `
+            <img src="${imgSrc}" alt="ผลงาน">
+            <div class="info">
+                <strong>${detail || 'ช่อดอกไม้'}</strong><br>
+                <small>ผู้จัด: ${emp.name}</small><br>
+                <small>ลูกค้า: ${custName}</small><br>
+                <span style="color:var(--primary); font-weight:bold;">${price.toLocaleString()} บาท</span>
+            </div>
+        `;
+        albumBox.insertBefore(card, albumBox.firstChild);
+
+        updateOrderReports();
+        alert('เพิ่มผลงานและสร้างออเดอร์สำเร็จ!');
+
+        document.getElementById('alb-cust-name').value = '';
+        document.getElementById('alb-detail').value = '';
+        document.getElementById('alb-price').value = '';
+        document.getElementById('alb-img-input').value = '';
+    }
+
+    function updateOrderReports() {
+        var tbody = document.getElementById('orders-table-body');
+        var staffPerf = document.getElementById('staff-performance');
+        tbody.innerHTML = '';
+        staffPerf.innerHTML = '';
+
+        var totalSales = 0;
+        var staffCounts = {};
+
+        ordersList.forEach(item => {
+            totalSales += item.price;
+
+            if (!staffCounts[item.empName]) {
+                staffCounts[item.empName] = { count: 0, total: 0 };
+            }
+            staffCounts[item.empName].count += 1;
+            staffCounts[item.empName].total += item.price;
+
+            var tr = document.createElement('tr');
+            tr.innerHTML = `<td><strong>${item.empName}</strong> (${item.empId})</td><td>${item.customer}</td><td>${item.detail}</td><td>${item.price.toLocaleString()} บาท</td>`;
+            tbody.appendChild(tr);
+        });
+
+        document.getElementById('total-sales').innerText = totalSales.toLocaleString() + ' บาท';
+        document.getElementById('total-orders').innerText = ordersList.length + ' ออเดอร์';
+
+        Object.keys(staffCounts).forEach(name => {
+            var li = document.createElement('li');
+            li.innerHTML = `<strong>${name}</strong> : ทำไปทั้งหมด <strong>${staffCounts[name].count}</strong> ออเดอร์ (รวมยอดขาย ${staffCounts[name].total.toLocaleString()} บาท)`;
+            staffPerf.appendChild(li);
+        });
+    }
+
+    function submitLeave() {
+        var idx = document.getElementById('leave-staff-select').value;
+        var emp = staffMembers[idx];
+        var type = document.getElementById('leave-type').value;
+        var date = document.getElementById('leave-date').value;
+        var reason = document.getElementById('leave-reason').value.trim();
+
+        if (!date) {
+            alert('กรุณาเลือกวันที่ต้องการลา');
+            return;
+        }
+
+        var tbody = document.getElementById('leave-table-body');
+        var tr = document.createElement('tr');
+        tr.innerHTML = `<td>${emp.name}</td><td>${type}</td><td>${date}</td><td>${reason || '-'}</td>`;
+        tbody.insertBefore(tr, tbody.firstChild);
+
+        alert('ยื่นใบลาเรียบร้อยแล้ว');
+        document.getElementById('leave-reason').value = '';
+    }
+</script>
+</body>
+</html>
